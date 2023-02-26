@@ -176,7 +176,10 @@ class ParseHtm():
         self.unknowns = []
         with open(fname, 'rb') as file:
             buf = file.read()
-            buf = buf.decode('ISO-8859-1') #byte to str
+            try:
+                buf = buf.decode('utf8') #byte to str
+            except:
+                buf = buf.decode('latin1')
         self.content = re.split(' class="article [a-z]{2}Article">',
                                 buf)[1:]
         for article in self.content:

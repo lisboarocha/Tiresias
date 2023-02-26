@@ -1,4 +1,4 @@
-#!"C:\Users\Samue\OneDrive\Área de Trabalho\projetos\2022-10\7 - Tiresias\Tiresias-master\venv\Scripts\python.exe"
+#!"C:\Users\Samue\OneDrive\Área de Trabalho\projetos\2022-11\6 - Tiresias\Tiresias-master\venv\Scripts\python.exe"
 # EASY-INSTALL-ENTRY-SCRIPT: 'future==0.18.2','console_scripts','pasteurize'
 import re
 import sys
