@@ -260,7 +260,7 @@ class ParseHtm():
                 text = article['text']
             with open(path, 'wb') as file:
                 #to bytes
-                file.write(text.encode('utf8', 'xmlcharrefreplace'))
+                file.write(text.encode('Windows-1252', 'xmlcharrefreplace'))
 
             
             ed = f'\ ED: {article["ED"]}'
@@ -283,7 +283,7 @@ class ParseHtm():
                 "", "n", "n", #13, #14, #15
                 ]
             ctx = "\r\n".join(ctx)
-            ctx = ctx.encode('utf8', 'xmlcharrefreplace') #to bytes
+            ctx = ctx.encode('Windows-1252', 'xmlcharrefreplace') #to bytes
             path = os.path.join(save_dir, filepath + ".ctx")
             with open(path, 'wb') as file:
                 file.write(ctx)
