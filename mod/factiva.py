@@ -85,6 +85,9 @@ def parse(article):
                     '<%s class=["\'][a-z]{2}Headline["\']>'%tag,
                     '</%s>'%tag)
         result['title'] = re.sub(r"^(\r\n|\n)\s*", "", title)
+        result['title'] = re.sub(r"\s*(\r\n|\n)\s*$", "", result['title'])
+        result['title'] = re.sub(r"\s+", " ", result['title'])
+        result["title"] = str(result["title"]).strip()
     except:
         result['title'] = "Title problem"
     #remove <b> and </b>
@@ -210,6 +213,26 @@ class ParseHtm():
     def write_prospero_files(self, save_dir=".", cleaning=False):
         """for each article, write txt, csv and ctx in a given directory"""
         
+        #escrevendo csv
+        article = list(self.articles.values())[0]
+        filepath = file_name(article['date'],
+                                 article['root'],
+                                 save_dir)
+        path = os.path.join(save_dir, "dados.csv")
+        chaves = ["CLM", "SE", "HD", "BY", "CR", "WC", "PD", "SN", "SC", "ED", "PG", "LA", "CY", "LP", "TD", "ART", "CO", "IN", "NS", "RE", "IPC", "IPD", "PUB", "AN"]
+        
+        #criando o csv
+        #escrever csv com valores onde a chave estiver em chaves
+        with open(path, 'w', encoding="utf8", newline="") as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quotechar='"',
+                                quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(chaves)
+            for article in self.articles.values():
+                row = []
+                for chave in chaves:
+                    row.append(str(article[chave]).replace(";", ""))
+                writer.writerow(row)
+
         for article in self.articles.values():
             filepath = file_name(article['date'],
                                  article['root'],
@@ -225,36 +248,25 @@ class ParseHtm():
                 #to bytes
                 file.write(text.encode('utf8', 'xmlcharrefreplace'))
 
-            #escrevendo csv
-            path = os.path.join(save_dir, filepath + ".csv")
-            chaves = ["CLM", "SE", "HD", "BY", "CR", "WC", "PD", "SN", "SC", "ED", "PG", "LA", "CY", "LP", "TD", "ART", "CO", "IN", "NS", "RE", "IPC", "IPD", "PUB", "AN"]
             
-            with open(path, 'w', encoding="utf8", newline="") as csvfile:
-                for chave in chaves:
-                    if chave in article.keys():
-                        print("Chave: %s" % chave)
-                        csv.writer(csvfile, delimiter=';').writerow([f'{article[chave]}'])
-                    else:
-                        print(chave)
-            print()
             ed = f'\ ED: {article["ED"]}'
             pg_se = f'PG: {article["PG"]} \ SE: {article["SE"]} '
             ctx = [
-                "fileCtx0005",
-                article['title'],
-                f"{article['support']}",
-                f"{article['BY']}",
-                "", 
-                f"{article['date']}",
-                f"{article['support']}",
-                "","",
-                pg_se,
-                "","",
+                "fileCtx0005",#1
+                str(article['HD']).strip(),#2
+                f"{article['SN']}",#3
+                f"{article['BY']}",#4
+                "", #5
+                f"{article['date']}",#6
+                f"{article['support']}",#7
+                "","",#8, #9
+                pg_se,#10
+                "",#11,
                 # article['source_type'],
                 # "", "", "",
                 "Processed by Tiresias on %s"\
-                    % datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                "", "n", "n", ""
+                    % datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),#12
+                "", "n", "n", #13, #14, #15
                 ]
             ctx = "\r\n".join(ctx)
             ctx = ctx.encode('utf8', 'xmlcharrefreplace') #to bytes
