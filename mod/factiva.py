@@ -223,14 +223,14 @@ class ParseHtm():
         
         #criando o csv
         #escrever csv com valores onde a chave estiver em chaves
-        with open(path, 'w', encoding="ISO-8859-1", newline="") as csvfile:
+        with open(path, 'w', encoding="utf8", newline="") as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quotechar='"',
                                 quoting=csv.QUOTE_MINIMAL)
             writer.writerow(chaves)
             for article in self.articles.values():
                 row = []
                 for chave in chaves:
-                    row.append(str(article[chave]).replace(";", ""))
+                    row.append(str(article[chave]).replace(";", "").replace(',', ''))
                 writer.writerow(row)
 
         for article in self.articles.values():
@@ -250,7 +250,7 @@ class ParseHtm():
 
             
             ed = f'\ ED: {article["ED"]}'
-            pg_se = f'PG: {article["PG"]} \ SE: {article["SE"]} '
+            pg_se = f'PG: {article["PG"]} / SE: {article["SE"]} '.replace("\\"," ")
             ctx = [
                 "fileCtx0005",#1
                 str(article['HD']).strip(),#2
