@@ -9,6 +9,7 @@ import os
 import glob
 import random
 import datetime
+import csv
 try:
     import cleaning
 except:
@@ -84,9 +85,6 @@ def parse(article):
                     '<%s class=["\'][a-z]{2}Headline["\']>'%tag,
                     '</%s>'%tag)
         result['title'] = re.sub(r"^(\r\n|\n)\s*", "", title)
-        result['title'] = re.sub(r"\s*(\r\n|\n)\s*$", "", result['title'])
-        result['title'] = re.sub(r"\s+", " ", result['title'])
-        result["title"] = str(result["title"]).strip()
     except:
         result['title'] = "Title problem"
     #remove <b> and </b>
@@ -161,28 +159,11 @@ articleParagraph">', article)[1:]
             if idx < len(paragraphs)-1:
                 result["LP"] = paragraph
                 paragraph = paragraph + "\r\n" + "TD: "
-        
-        paragraph += "\r\n"
         result['text'] += paragraph
     texto =  str(str(result['text']).split('LP:')[1]).split('TD:')
-    try:
-        result["LP"] = texto[0]
-        result["TD"] = texto[1]
-    except:
-        if "LP: " in result["text"]:
-            parte_1 = result["text"].split("LP: ")[1]
-            if "TD: " in parte_1:
-                result["LP"] = parte_1.split("TD: ")[0]
-                result["TD"] = parte_1.split("TD: ")[1]
-            else:
-                result["LP"] = parte_1
-                result["TD"] = "None"
-        elif "TD: " in result["text"]:
-            parte_1 = result["text"].split("TD: ")[1]
-            result["LP"] = "None"
-            result["TD"] = parte_1
-
-    result["text"] = result["text"].replace("LP: ","").replace("TD: ","").replace("\r\n\r\n","\r\n")
+    result["LP"] = texto[0]
+    result["TD"] = texto[1]
+    result["text"] = result["text"].replace("LP: ","").replace("TD: ","")
     return result
 
 class ParseHtm():
@@ -190,14 +171,9 @@ class ParseHtm():
     def __init__(self, fname):
         self.articles = {}
         self.unknowns = []
-        self.rows = []
-        self.path_csv = ""
         with open(fname, 'rb') as file:
             buf = file.read()
-            try:
-                buf = buf.decode('utf8') #byte to str
-            except:
-                buf = buf.decode('latin1')
+            buf = buf.decode('utf8') #byte to str
         self.content = re.split(' class="article [a-z]{2}Article">',
                                 buf)[1:]
         for article in self.content:
@@ -234,21 +210,6 @@ class ParseHtm():
     def write_prospero_files(self, save_dir=".", cleaning=False):
         """for each article, write txt, csv and ctx in a given directory"""
         
-        #escrevendo csv
-        article = list(self.articles.values())[0]
-        filepath = file_name(article['date'],
-                                 article['root'],
-                                 save_dir)
-        self.path_csv = os.path.join(save_dir, "dados.csv")
-        chaves = ["CLM", "SE", "HD", "BY", "CR", "WC", "PD", "SN", "SC", "ED", "PG", "LA", "CY", "LP", "TD", "ART", "CO", "IN", "NS", "RE", "IPC", "IPD", "PUB", "AN"]
-        
-        for article in self.articles.values():
-            row = []
-            for chave in chaves:
-                chave = "date" if chave == "PD" else chave
-                row.append(str(article[chave]).replace(";", "").replace(',', ''))
-            self.rows.append(row)
-
         for article in self.articles.values():
             filepath = file_name(article['date'],
                                  article['root'],
@@ -262,44 +223,44 @@ class ParseHtm():
                 text = article['text']
             with open(path, 'wb') as file:
                 #to bytes
-                try:
-                    file.write(text.encode('Windows-1252', 'xmlcharrefreplace'))
-                except:
-                    file.write(text.encode('latin1', 'xmlcharrefreplace'))
+                file.write(text.encode('utf8', 'xmlcharrefreplace'))
 
+            #escrevendo csv
+            path = os.path.join(save_dir, filepath + ".csv")
+            chaves = ["CLM", "SE", "HD", "BY", "CR", "WC", "PD", "SN", "SC", "ED", "PG", "LA", "CY", "LP", "TD", "ART", "CO", "IN", "NS", "RE", "IPC", "IPD", "PUB", "AN"]
             
+            with open(path, 'w', encoding="utf8", newline="") as csvfile:
+                for chave in chaves:
+                    if chave in article.keys():
+                        print("Chave: %s" % chave)
+                        csv.writer(csvfile, delimiter=';').writerow([f'{article[chave]}'])
+                    else:
+                        print(chave)
+            print()
             ed = f'\ ED: {article["ED"]}'
-            pg_se = f'PG: {article["PG"]} / SE: {article["SE"]} '.replace("\\"," ")
+            pg_se = f'PG: {article["PG"]} \ SE: {article["SE"]} '
             ctx = [
-                "fileCtx0005",#1
-                str(article['HD']).strip(),#2
-                f"{article['SN']}",#3
-                f"{article['BY']}",#4
-                "", #5
-                f"{article['date']}",#6
-                f"{article['support']}",#7
-                "","",#8, #9
-                pg_se,#10
-                "",#11,
+                "fileCtx0005",
+                article['title'],
+                f"{article['support']}",
+                f"{article['BY']}",
+                "", 
+                f"{article['date']}",
+                f"{article['support']}",
+                "","",
+                pg_se,
+                "","",
                 # article['source_type'],
                 # "", "", "",
                 "Processed by Tiresias on %s"\
-                    % datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),#12
-                "", "n", "n", #13, #14, #15
+                    % datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                "", "n", "n", ""
                 ]
             ctx = "\r\n".join(ctx)
-            try:
-                ctx = ctx.encode('Windows-1252', 'xmlcharrefreplace') #to bytes
-            except:
-                ctx = ctx.encode('latin1', 'xmlcharrefreplace')
+            ctx = ctx.encode('utf8', 'xmlcharrefreplace') #to bytes
             path = os.path.join(save_dir, filepath + ".ctx")
             with open(path, 'wb') as file:
                 file.write(ctx)
-    def get_rows(self):
-        return self.rows
-
-    def get_path_csv(self):
-        return self.path_csv
 
 if __name__ == "__main__":
     SUPPORTS_FILE = "support.publi"
