@@ -233,6 +233,7 @@ class ParseHtm():
             for article in self.articles.values():
                 row = []
                 for chave in chaves:
+                    chave = "date" if chave == "PD" else chave
                     row.append(str(article[chave]).replace(";", "").replace(',', ''))
                 writer.writerow(row)
 
