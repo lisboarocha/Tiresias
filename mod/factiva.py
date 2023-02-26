@@ -176,7 +176,7 @@ class ParseHtm():
         self.unknowns = []
         with open(fname, 'rb') as file:
             buf = file.read()
-            buf = buf.decode('utf8') #byte to str
+            buf = buf.decode('ISO-8859-1') #byte to str
         self.content = re.split(' class="article [a-z]{2}Article">',
                                 buf)[1:]
         for article in self.content:
@@ -223,7 +223,7 @@ class ParseHtm():
         
         #criando o csv
         #escrever csv com valores onde a chave estiver em chaves
-        with open(path, 'w', encoding="utf8", newline="") as csvfile:
+        with open(path, 'w', encoding="ISO-8859-1", newline="") as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quotechar='"',
                                 quoting=csv.QUOTE_MINIMAL)
             writer.writerow(chaves)
