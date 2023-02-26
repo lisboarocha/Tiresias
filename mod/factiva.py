@@ -161,6 +161,8 @@ articleParagraph">', article)[1:]
             if idx < len(paragraphs)-1:
                 result["LP"] = paragraph
                 paragraph = paragraph + "\r\n" + "TD: "
+        
+        paragraph += "\r\n"
         result['text'] += paragraph
     texto =  str(str(result['text']).split('LP:')[1]).split('TD:')
     try:
@@ -180,7 +182,7 @@ articleParagraph">', article)[1:]
             result["LP"] = "None"
             result["TD"] = parte_1
 
-    result["text"] = result["text"].replace("LP: ","").replace("TD: ","")
+    result["text"] = result["text"].replace("LP: ","").replace("TD: ","").replace("\r\n\r\n","\r\n")
     return result
 
 class ParseHtm():
