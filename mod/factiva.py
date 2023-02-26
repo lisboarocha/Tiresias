@@ -9,7 +9,6 @@ import os
 import glob
 import random
 import datetime
-import csv
 try:
     import cleaning
 except:
@@ -164,8 +163,23 @@ articleParagraph">', article)[1:]
                 paragraph = paragraph + "\r\n" + "TD: "
         result['text'] += paragraph
     texto =  str(str(result['text']).split('LP:')[1]).split('TD:')
-    result["LP"] = texto[0]
-    result["TD"] = texto[1]
+    try:
+        result["LP"] = texto[0]
+        result["TD"] = texto[1]
+    except:
+        if "LP: " in result["text"]:
+            parte_1 = result["text"].split("LP: ")[1]
+            if "TD: " in parte_1:
+                result["LP"] = parte_1.split("TD: ")[0]
+                result["TD"] = parte_1.split("TD: ")[1]
+            else:
+                result["LP"] = parte_1
+                result["TD"] = "None"
+        elif "TD: " in result["text"]:
+            parte_1 = result["text"].split("TD: ")[1]
+            result["LP"] = "None"
+            result["TD"] = parte_1
+
     result["text"] = result["text"].replace("LP: ","").replace("TD: ","")
     return result
 
@@ -174,6 +188,8 @@ class ParseHtm():
     def __init__(self, fname):
         self.articles = {}
         self.unknowns = []
+        self.rows = []
+        self.path_csv = ""
         with open(fname, 'rb') as file:
             buf = file.read()
             try:
@@ -221,21 +237,15 @@ class ParseHtm():
         filepath = file_name(article['date'],
                                  article['root'],
                                  save_dir)
-        path = os.path.join(save_dir, "dados.csv")
+        self.path_csv = os.path.join(save_dir, "dados.csv")
         chaves = ["CLM", "SE", "HD", "BY", "CR", "WC", "PD", "SN", "SC", "ED", "PG", "LA", "CY", "LP", "TD", "ART", "CO", "IN", "NS", "RE", "IPC", "IPD", "PUB", "AN"]
         
-        #criando o csv
-        #escrever csv com valores onde a chave estiver em chaves
-        with open(path, 'w', encoding="utf8", newline="") as csvfile:
-            writer = csv.writer(csvfile, delimiter=';', quotechar='"',
-                                quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(chaves)
-            for article in self.articles.values():
-                row = []
-                for chave in chaves:
-                    chave = "date" if chave == "PD" else chave
-                    row.append(str(article[chave]).replace(";", "").replace(',', ''))
-                writer.writerow(row)
+        for article in self.articles.values():
+            row = []
+            for chave in chaves:
+                chave = "date" if chave == "PD" else chave
+                row.append(str(article[chave]).replace(";", "").replace(',', ''))
+            self.rows.append(row)
 
         for article in self.articles.values():
             filepath = file_name(article['date'],
@@ -277,6 +287,11 @@ class ParseHtm():
             path = os.path.join(save_dir, filepath + ".ctx")
             with open(path, 'wb') as file:
                 file.write(ctx)
+    def get_rows(self):
+        return self.rows
+
+    def get_path_csv(self):
+        return self.path_csv
 
 if __name__ == "__main__":
     SUPPORTS_FILE = "support.publi"

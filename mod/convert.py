@@ -165,6 +165,7 @@ articleParagraph">', article)[1:]
                 paragraph = paragraph + "\r\n" + "TD: "
         result['text'] += paragraph
     texto =  str(str(result['text']).split('LP:')[1]).split('TD:')
+    print("texto", texto)
     result["LP"] = texto[0]
     result["TD"] = texto[1]
     result["text"] = result["text"].replace("LP: ","").replace("TD: ","")
