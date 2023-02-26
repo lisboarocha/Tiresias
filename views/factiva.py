@@ -104,11 +104,27 @@ class ViewFactiva():
         
             #criando o csv
             #escrever csv com valores onde a chave estiver em chaves
-            with open(path, 'w', encoding="Windows-1252", newline="") as csvfile:
-                writer = csv.writer(csvfile, delimiter=';', quotechar='"',
-                                    quoting=csv.QUOTE_MINIMAL)
-                writer.writerow(chaves)
-                for row in rows:
-                    writer.writerow(row)
+            try:
+                with open(path, 'w', encoding="Windows-1252", newline="") as csvfile:
+                    writer = csv.writer(csvfile, delimiter=';', quotechar='"',
+                                        quoting=csv.QUOTE_MINIMAL)
+                    writer.writerow(chaves)
+                    for row in rows:
+                        writer.writerow(row)
+            except:
+                try:
+                    with open(path, 'w', encoding="latin1", newline="") as csvfile:
+                        writer = csv.writer(csvfile, delimiter=';', quotechar='"',
+                                            quoting=csv.QUOTE_MINIMAL)
+                        writer.writerow(chaves)
+                        for row in rows:
+                            writer.writerow(row)
+                except:
+                    with open(path, 'w', encoding="utf8", newline="") as csvfile:
+                        writer = csv.writer(csvfile, delimiter=';', quotechar='"',
+                                            quoting=csv.QUOTE_MINIMAL)
+                        writer.writerow(chaves)
+                        for row in rows:
+                            writer.writerow(row)
 
         
